@@ -9,7 +9,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
@@ -25,6 +24,8 @@ public class TranslationService {
     private final RestTemplate restTemplate;
     private TranslationTaskExecutor translationTaskExecutor;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ErrorParser errorParser;
+
 
     @Value("${yandex.api.token}")
     private String apiToken;
@@ -58,9 +59,9 @@ public class TranslationService {
             String translatedText = String.join(" ", translations);
             String ipAddress = getExternalIpAddress();
             saveTranslationRecord(ipAddress, requestBody.getTexts(), translatedText);
-            return translatedText;
+            return "http 200" + " " + translatedText;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to execute translation tasks: " + e.getMessage(), e);
+            return errorParser.describeError(e.getMessage());
         }
     }
 
@@ -69,7 +70,7 @@ public class TranslationService {
             String response = restTemplate.getForObject("https://api.ipify.org?format=json", String.class);
             return objectMapper.readTree(response).get("ip").asText();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve external IP address: " + e.getMessage(), e);
+            return "Failed to get IP address from api.ipify.org";
         }
     }
 
