@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translator</title>
+    <style>
+        .form-group {
+            display: flex;
+            align-items: flex-start; /* Выравнивание по верхнему краю */
+            margin-bottom: 1px; /* Отступ между элементами формы */
+        }
+
+        .form-group label {
+            margin-right: 1px; /* Отступ между подписью и текстовым полем */
+            margin-bottom: 10px;
+            flex-shrink: 0; /* Запрещает уменьшение размера подписи */
+            width: 100px; /* Устанавливает ширину подписи */
+        }
+
+        textarea {
+            width: 500px; /* Ширина текстового поля */
+            height: 150px; /* Высота текстового поля */
+            overflow-y: scroll; /* Вертикальная прокрутка, если текст превышает высоту */
+            box-sizing: border-box; /* Учет границ и отступов в общей ширине/высоте */
+        }
+        button {
+            margin-top: 20px; /* Отступ сверху для кнопки */
+        }
+    </style>
+</head>
+<body>
+<h1>Text Translation</h1>
+<form id="translationForm">
+
+    <label for="sourceLanguageCode">Source Language:</label>
+    <input type="text" id="sourceLanguageCode" name="sourceLanguageCode" required><br><br>
+
+    <label for="targetLanguageCode">Target Language:</label>
+    <input type="text" id="targetLanguageCode" name="targetLanguageCode" required><br><br>
+
+    <div class="form-group">
+        <label for="texts">Text:</label>
+        <textarea id="texts" name="texts" required></textarea>
+    </div>
+
+    <button type="submit">Translate</button>
+</form>
+
+<h2>Translation Result</h2>
+<pre id="result"></pre>
+
+<h2>Error</h2>
+<pre id="error"></pre>
+
+<script>
+    document.getElementById('translationForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {
+            texts: formData.get('texts'),
+            sourceLanguageCode: formData.get('sourceLanguageCode'),
+            targetLanguageCode: formData.get('targetLanguageCode'),
+        };
+
+        try {
+            const response = await fetch('/api/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                // Read and throw error from response if not ok
+                const errorText = await response.text();
+                throw new Error(`HTTP error! Status: ${response.status} - ${errorText}`);
+            }
+
+            // Directly output the response text
+            document.getElementById('result').textContent = await response.text();
+            document.getElementById('error').textContent = ''; // Clear any previous error
+        } catch (error) {
+            // Display error message
+            document.getElementById('result').textContent = ''; // Clear any previous result
+            document.getElementById('error').textContent = `Error: ${error.message}`;
+        }
+    });
+</script>
+</body>
+</html>
