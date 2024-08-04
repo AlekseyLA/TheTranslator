@@ -1,9 +1,10 @@
 package com.example.mytranslator;
 
-import com.example.mytranslator.TranslationRequest;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
-public interface TranslationRequestRepository extends CrudRepository<TranslationRequest, Long> {
+public interface TranslationRequestRepository extends CrudRepository<TranslationRequest, UUID> {
 }

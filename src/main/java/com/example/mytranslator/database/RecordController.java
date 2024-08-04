@@ -1,7 +1,5 @@
-package com.example.mytranslator;
+package com.example.mytranslator.database;
 
-import com.example.mytranslator.database.TranslationRecord;
-import com.example.mytranslator.database.TranslationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +15,10 @@ public class RecordController {
         this.translationRepository = translationRepository;
     }
 
-    @GetMapping("/records")
+    @GetMapping("/records.html")
     public String getRecords(Model model) {
         List<TranslationRecord> records = translationRepository.findAll();
         model.addAttribute("records", records);
-        return "records";
+        return "records.html";
     }
 }

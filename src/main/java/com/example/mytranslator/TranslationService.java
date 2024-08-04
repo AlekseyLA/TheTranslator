@@ -1,26 +1,30 @@
 package com.example.mytranslator;
 
+import com.example.mytranslator.database.TranslationRecord;
+import com.example.mytranslator.database.TranslationRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import static java.util.Arrays.asList;
-
+@RequiredArgsConstructor
 @Service
 public class TranslationService {
 
-    private final ObjectMapper objectMapper;
+    private final TranslationRepository translationRepository;
+    private final RestTemplate restTemplate;
+    private TranslationTaskExecutor translationTaskExecutor;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${yandex.api.token}")
     private String apiToken;
@@ -31,13 +35,9 @@ public class TranslationService {
     @Value("${yandex.api.url}")
     private String apiUrl;
 
-    private final RestTemplate restTemplate;
-    private final TranslationTaskExecutor translationTaskExecutor;
-
-    public TranslationService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        this.objectMapper = new ObjectMapper();
-        this.translationTaskExecutor = new TranslationTaskExecutor(restTemplate, 10); // Создаем с пулом в 10 потоков
+    @PostConstruct
+    public void init() {
+        this.translationTaskExecutor = new TranslationTaskExecutor(restTemplate, 10);
     }
 
     public String translateText(TranslationRequestBody requestBody) {
@@ -48,33 +48,34 @@ public class TranslationService {
 
         String[] words = requestBody.getTexts().split("\\s+");
 
-        // Создайте список задач
         List<Callable<String>> tasks = new ArrayList<>();
         for (String word : words) {
             tasks.add(translationTaskExecutor.createTranslationTask(requestBody, apiUrl, headers, word));
         }
 
-        // Выполните задачи в пуле потоков и получите результаты
         try {
             List<String> translations = translationTaskExecutor.executeTranslations(tasks);
-            getExternalIpAddress();
-            return String.join(" ", translations);
+            String translatedText = String.join(" ", translations);
+            String ipAddress = getExternalIpAddress();
+            saveTranslationRecord(ipAddress, requestBody.getTexts(), translatedText);
+            return translatedText;
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute translation tasks: " + e.getMessage(), e);
         }
     }
 
-    public String getExternalIpAddress() {
+    private String getExternalIpAddress() {
         try {
-            ResponseEntity<String> response = restTemplate.getForEntity("https://api.ipify.org?format=json", String.class);
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readTree(response.getBody()).get("ip").asText();
-            } else {
-                throw new RuntimeException("Failed to retrieve external IP address: " + response.getStatusCode());
-            }
+            String response = restTemplate.getForObject("https://api.ipify.org?format=json", String.class);
+            return objectMapper.readTree(response).get("ip").asText();
         } catch (Exception e) {
             throw new RuntimeException("Failed to retrieve external IP address: " + e.getMessage(), e);
         }
+    }
+
+    private void saveTranslationRecord(String ipAddress, String sourceText, String translatedText) {
+        TranslationRecord record = new TranslationRecord(UUID.randomUUID(), ipAddress, sourceText, translatedText);
+        translationRepository.save(record);
     }
 
     @PreDestroy

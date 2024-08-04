@@ -1,16 +1,18 @@
 package com.example.mytranslator;
 
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import javax.persistence.*;
+import java.util.UUID;
 
-@Entity
 @Data
+@Table("translation_requests")
 public class TranslationRequest {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String ipAddress;
-    private String originalText;
-    private String translatedText;
+    private UUID id;
+    private String sourceLanguage;
+    private String targetLanguage;
+    private String text;
+
 }

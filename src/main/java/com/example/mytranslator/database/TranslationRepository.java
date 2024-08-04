@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class TranslationRepository {
@@ -15,14 +16,22 @@ public class TranslationRepository {
     }
 
     public List<TranslationRecord> findAll() {
-        String sql = "SELECT * FROM translation_record";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            TranslationRecord record = new TranslationRecord();
-            record.setId(rs.getLong("id"));
-            record.setIpAddress(rs.getString("ip_address"));
-            record.setSourceText(rs.getString("source_text"));
-            record.setTranslatedText(rs.getString("translated_text"));
-            return record;
-        });
+        String sql = "SELECT * FROM TRANSLATION_RECORD";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new TranslationRecord(
+                UUID.fromString(rs.getString("id")),
+                rs.getString("ip_address"),
+                rs.getString("source_text"),
+                rs.getString("translated_text")
+        ));
+    }
+
+    public void save(TranslationRecord record) {
+        String sql = "INSERT INTO TRANSLATION_RECORD (id, ip_address, source_text, translated_text) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sql,
+                record.getId().toString(),
+                record.getIpAddress(),
+                record.getSourceText(),
+                record.getTranslatedText()
+        );
     }
 }

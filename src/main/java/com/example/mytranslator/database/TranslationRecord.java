@@ -1,17 +1,16 @@
 package com.example.mytranslator.database;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
-@Table("translation_record")
+import java.util.UUID;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TranslationRecord {
-
-    @Id
-    private Long id;
+    private UUID id;
     private String ipAddress;
     private String sourceText;
     private String translatedText;
