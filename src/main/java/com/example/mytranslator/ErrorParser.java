@@ -17,7 +17,7 @@ public class ErrorParser {
         if (error.toLowerCase().contains("unsupported target_language_cod"))
             return "http 400 Проверьте код языка для перевода";
         if (error.toLowerCase().contains("target_language_code must be set"))
-            return "http 400 Необходимо установить код исходного языка";
+            return "http 400 Необходимо установить код языка для перевода";
         if (error.toLowerCase().contains("texts are empty"))
             return "http 400 Отсутствует текст для перевода";
         return "http Неизвестная ошибка: " + error;
