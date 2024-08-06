@@ -7,3 +7,6 @@
 5. Ввести токены в файл /scr/main/resources/application.properties (yandex.api.token= , yandex.folder.id=);
 6. Запустить приложение из IDE и перейти на http://0.0.0.0:8080/index.html;
 7. Следовать инструкциям на веб-сайте. 
+
+
+P.S.: Яндекс переводчик не переводит "i" - забавный факт.
