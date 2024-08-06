@@ -13,13 +13,15 @@ public class ErrorParser {
         if (error.toLowerCase().contains("permission denied"))
             return "http 403 Доступ запрещен (проверьте folderID)";
         if (error.toLowerCase().contains("unsupported source_language_code"))
-            return "http 400 Проверьте код языка источника";
+            return "http 400 Проверьте код языка исходного текста";
         if (error.toLowerCase().contains("unsupported target_language_cod"))
             return "http 400 Проверьте код языка для перевода";
+        if (error.toLowerCase().contains("unrecognized field \"detectedlanguagecode\""))
+            return "http 400 Необходимо установить код языка исходного текста";
         if (error.toLowerCase().contains("target_language_code must be set"))
             return "http 400 Необходимо установить код языка для перевода";
         if (error.toLowerCase().contains("texts are empty"))
-            return "http 400 Отсутствует текст для перевода";
-        return "http Неизвестная ошибка: " + error;
+            return "http 400 Отсутствует исходный текст для перевода";
+        return "http 400 Неизвестная ошибка: " + error;
     }
 }
